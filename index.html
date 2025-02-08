@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="fa">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ساخت DNS اختصاصی</title>
+  <link rel="stylesheet" href="index.css">
+</head>
+
+<body>
+  <!-- صفحه ورود -->
+  <div id="login-overlay">
+    <div class="login-container">
+      <div class="login-icon">🔒</div>
+      <h2>ورود به سایت</h2>
+      <input type="text" id="username" placeholder="نام کاربری">
+      <input type="password" id="password" placeholder="رمز عبور">
+      <button id="login-btn">ورود</button>
+      <p id="login-error" class="error-message">نام کاربری یا رمز عبور اشتباه است.</p>
+      <!-- لینک اینستاگرام با آیکون و آیدی -->
+      <a href="https://www.instagram.com/arshia.n78?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=="
+        id="insta-link" target="_blank">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png" alt="Instagram">
+        <span>arshia.n78</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- محتوای اصلی (پس از ورود موفق) -->
+  <div id="main-content" style="display:none;">
+    <header>
+      <h1>ساخت DNS اختصاصی</h1>
+      <!-- پیام خوش‌آمدگویی با نام کاربری و تاریخ شمسی -->
+      <p id="welcome-message"></p>
+    </header>
+
+    <!-- بخش ساخت DNS (برای رنج‌های لوکیشن تعریف‌شده) -->
+    <section id="dns-generator">
+      <h2>ساخت DNS اختصاصی</h2>
+      <div class="location-select">
+        <label for="location-select">انتخاب لوکیشن:</label>
+        <select id="location-select">
+          <!-- گزینه‌ها به صورت داینامیک اضافه می‌شوند -->
+        </select>
+      </div>
+      <button id="generate-ips">ساخت DNS اختصاصی</button>
+      <div class="result-section">
+        <h3>DNS (نسل 4):</h3>
+        <div class="result" id="ipv4-result"></div>
+      </div>
+      <div class="result-section">
+        <h3>DNS (نسل 6):</h3>
+        <div class="result" id="ipv6-result"></div>
+      </div>
+    </section>
+
+    <!-- بخش کدهای اختصاصی (کارت‌های تولید آدرس) -->
+    <section id="custom-codes">
+      <h2>کدهای اختصاصی</h2>
+
+      <!-- کارت England Gaming -->
+      <div class="code-card">
+        <h2>England Gaming</h2>
+        <!-- کارت England Gaming IPv4 -->
+        <div class="custom-address">
+          <h4>نسل 4 (IPv4)</h4>
+          <button id="generate-england-ipv4">ساخت آدرس IPv4</button>
+          <div id="england-ipv4-result" class="address-display"></div>
+        </div>
+        <!-- کارت England Gaming IPv6 -->
+        <div class="custom-address">
+          <h4>نسل 6 (IPv6)</h4>
+          <button id="generate-england-ipv6">ساخت آدرس IPv6</button>
+          <div id="england-ipv6-result" class="address-display"></div>
+        </div>
+      </div>
+
+      <!-- کارت امارات (فقط IPv4) -->
+      <div class="code-card">
+        <h2>امارات</h2>
+        <div class="custom-address">
+          <h4>نسل 4 (IPv4)</h4>
+          <button id="generate-emirates-ipv4">ساخت آدرس IPv4</button>
+          <div id="emirates-ipv4-result" class="address-display"></div>
+        </div>
+      </div>
+
+      <!-- کارت ایتالیا (فقط IPv4) -->
+      <div class="code-card">
+        <h2>ایتالیا</h2>
+        <div class="custom-address">
+          <h4>نسل 4 (IPv4)</h4>
+          <button id="generate-italy-ipv4">ساخت آدرس IPv4</button>
+          <div id="italy-ipv4-result" class="address-display"></div>
+        </div>
+      </div>
+
+      <!-- کارت عراق (فقط IPv6) -->
+      <div class="code-card">
+        <h2>عراق</h2>
+        <div class="custom-address">
+          <h4>نسل 6 (IPv6)</h4>
+          <button id="generate-iraq-ipv6">ساخت آدرس IPv6</button>
+          <div id="iraq-ipv6-result" class="address-display"></div>
+        </div>
+      </div>
+
+      <!-- کارت آمریکا -->
+      <div class="code-card">
+        <h2>آمریکا</h2>
+        <div class="custom-address">
+          <h4>نسل 4 (IPv4) - Reverse DNS</h4>
+          <button id="generate-america-ipv4">ساخت آدرس IPv4</button>
+          <div id="america-ipv4-result" class="address-display"></div>
+        </div>
+      </div>
+
+      <!-- کارت نسل 6 سفارشی جدید -->
+      <div class="code-card">
+        <h2>نسل 6 سفارشی</h2>
+        <div class="custom-address">
+          <h4>تولید آدرس IPv6 سفارشی</h4>
+          <button id="generate-custom-ipv6">ساخت آدرس IPv6 سفارشی</button>
+          <div id="custom-ipv6-result" class="address-display"></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    /* --------------------------
+       توابع تبدیل تاریخ میلادی به شمسی (هجری شمسی)
+    -------------------------- */
+    function gregorian_to_jalali(gy, gm, gd) {
+      var g_d_m = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334];
+      var jy = (gy > 1600) ? 979 : 0;
+      gy = (gy > 1600) ? gy - 1600 : gy - 621;
+      var days = (365 * gy) + Math.floor((gy + 3) / 4) - Math.floor((gy + 99) / 100) + Math.floor((gy + 399) / 400) - 80 + gd + g_d_m[gm - 1];
+      jy += 33 * Math.floor(days / 12053);
+      days %= 12053;
+      jy += 4 * Math.floor(days / 1461);
+      days %= 1461;
+      if (days > 365) {
+        jy += Math.floor((days - 1) / 365);
+        days = (days - 1) % 365;
+      }
+      var jm = (days < 186) ? 1 + Math.floor(days / 31) : 7 + Math.floor((days - 186) / 30);
+      var jd = (days < 186) ? 1 + (days % 31) : 1 + ((days - 186) % 30);
+      return [jy, jm, jd];
+    }
+
+    function toJalali(date) {
+      const gy = date.getFullYear();
+      const gm = date.getMonth() + 1;
+      const gd = date.getDate();
+      const [jy, jm, jd] = gregorian_to_jalali(gy, gm, gd);
+      const paddedMonth = jm.toString().padStart(2, '0');
+      const paddedDay = jd.toString().padStart(2, '0');
+      return `${jy}/${paddedMonth}/${paddedDay}`;
+    }
+
+    /* --------------------------
+       تعریف کاربران با تاریخ انقضای ۳۰، ۶۰ و ۹۰ روز (و سایر کاربران)
+    -------------------------- */
+    const now = new Date();
+    const allowedUsers = [
+      { username: 'arshia', password: 'arshia' },
+      { username: '1', password: '1', expiry: '2025-12-31T23:59:59Z' },
+      { username: 'arshia30', password: 'arshia30', expiry: new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString() },
+      { username: 'arshia60', password: 'arshia60', expiry: new Date(now.getTime() + 60 * 24 * 60 * 60 * 1000).toISOString() },
+      { username: 'arshia90', password: 'arshia90', expiry: new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000).toISOString() }
+    ];
+
+    /* --------------------------
+       سیستم ورود
+    -------------------------- */
+    document.getElementById('login-btn').addEventListener('click', function () {
+      const usernameInput = document.getElementById('username').value;
+      const passwordInput = document.getElementById('password').value;
+      const user = allowedUsers.find(u => u.username === usernameInput && u.password === passwordInput);
+      if (user) {
+        if (user.expiry) {
+          const now = new Date();
+          const expiryDate = new Date(user.expiry);
+          if (now > expiryDate) {
+            document.getElementById('login-error').textContent = "زمان دسترسی شما منقضی شده است.";
+            document.getElementById('login-error').style.display = 'block';
+            return;
+          }
+        }
+        // مخفی کردن صفحه ورود و نمایش محتوای اصلی
+        document.getElementById('login-overlay').style.display = 'none';
+        document.getElementById('main-content').style.display = 'block';
+        // نمایش پیام خوش‌آمدگویی با نام کاربری و تاریخ امروز به صورت شمسی
+        const jalaliDate = toJalali(new Date());
+        document.getElementById('welcome-message').textContent = `خوش آمدید ${usernameInput} - تاریخ امروز: ${jalaliDate}`;
+      } else {
+        document.getElementById('login-error').style.display = 'block';
+      }
+    });
+
+    /* --------------------------
+       توابع کمکی برای بخش DNS اختصاصی (بر اساس CIDR)
+    -------------------------- */
+    function ip4ToNumber(ip) {
+      return ip.split('.').reduce((acc, octet) => (acc << 8) + parseInt(octet, 10), 0);
+    }
+    function numberToIp4(num) {
+      return [(num >> 24) & 255, (num >> 16) & 255, (num >> 8) & 255, num & 255].join('.');
+    }
+    function generateIPv4Addresses(cidr) {
+      let [ip, prefix] = cidr.split('/');
+      prefix = parseInt(prefix);
+      if (isNaN(prefix) || prefix < 0 || prefix > 32) {
+        alert('CIDR برای IPv4 نامعتبر است.');
+        return [];
+      }
+      const start = ip4ToNumber(ip);
+      const count = Math.pow(2, 32 - prefix);
+      if (count < 2) {
+        alert('بازه IPv4 کافی نیست.');
+        return [];
+      }
+      let addresses = [];
+      for (let i = 0; i < 2; i++) {
+        addresses.push(numberToIp4(start + i));
+      }
+      return addresses;
+    }
+    function expandIPv6(address) {
+      const fullAddress = [];
+      const parts = address.split('::');
+      let head = parts[0].split(':');
+      let tail = parts[1] ? parts[1].split(':') : [];
+      const missing = 8 - (head.length + tail.length);
+      for (let i = 0; i < head.length; i++) {
+        fullAddress.push(head[i].padStart(4, '0'));
+      }
+      for (let i = 0; i < missing; i++) {
+        fullAddress.push('0000');
+      }
+      for (let i = 0; i < tail.length; i++) {
+        fullAddress.push(tail[i].padStart(4, '0'));
+      }
+      return fullAddress;
+    }
+    function ipv6ToBigInt(address) {
+      const groups = expandIPv6(address);
+      let result = BigInt(0);
+      groups.forEach(group => {
+        result = (result << BigInt(16)) + BigInt(parseInt(group, 16));
+      });
+      return result;
+    }
+    function bigIntToIPv6(bigInt) {
+      let groups = [];
+      for (let i = 0; i < 8; i++) {
+        let group = Number((bigInt >> BigInt((7 - i) * 16)) & BigInt(0xffff));
+        groups.push(group.toString(16).padStart(4, '0'));
+      }
+      return groups.join(':');
+    }
+    function generateIPv6Addresses(cidr) {
+      let [ip, prefix] = cidr.split('/');
+      prefix = parseInt(prefix);
+      if (isNaN(prefix) || prefix < 0 || prefix > 128) {
+        alert('CIDR برای IPv6 نامعتبر است.');
+        return [];
+      }
+      const start = ipv6ToBigInt(ip);
+      const count = BigInt(1) << BigInt(128 - prefix);
+      if (count < 2) {
+        alert('بازه IPv6 کافی نیست.');
+        return [];
+      }
+      let addresses = [];
+      for (let i = BigInt(0); i < BigInt(2); i++) {
+        addresses.push(bigIntToIPv6(start + i));
+      }
+      return addresses;
+    }
+
+    /* --------------------------
+       تابع نمایش آدرس‌ها با قابلیت کپی و نمایش نقشه
+    -------------------------- */
+    function displayAddresses(addresses, containerId) {
+      const container = document.getElementById(containerId);
+      container.innerHTML = '';
+      addresses.forEach(address => {
+        const addressDiv = document.createElement('div');
+        addressDiv.className = 'address-item';
+        addressDiv.textContent = address;
+
+        // دکمه کپی آدرس
+        const copyBtn = document.createElement('button');
+        copyBtn.className = 'copy-btn';
+        copyBtn.textContent = 'کپی';
+        copyBtn.addEventListener('click', () => {
+          navigator.clipboard.writeText(address).then(() => {
+            copyBtn.textContent = 'کپی شد!';
+            copyBtn.classList.add('copied');
+            setTimeout(() => {
+              copyBtn.textContent = 'کپی';
+              copyBtn.classList.remove('copied');
+            }, 1500);
+          });
+        });
+
+        // دکمه نمایش نقشه
+        const mapBtn = document.createElement('button');
+        mapBtn.className = 'copy-btn';
+        mapBtn.textContent = 'نمایش نقشه';
+        mapBtn.addEventListener('click', () => {
+          const url = `https://www.iplocation.net/?query=${address}`;
+          window.open(url, '_blank');
+        });
+
+        addressDiv.appendChild(copyBtn);
+        addressDiv.appendChild(mapBtn);
+        container.appendChild(addressDiv);
+      });
+    }
+
+    /* --------------------------
+       تعریف رنج‌های لوکیشن (درون کد)
+    -------------------------- */
+    const locationRanges = {
+      "loc1": { name: "لوکیشن ۱", ipv4: "192.168.1.0/29", ipv6: "2001:db8::/125" },
+      "loc2": { name: "لوکیشن ۲", ipv4: "10.0.0.0/30", ipv6: "2001:db8:1::/126" },
+      "loc3": { name: "لوکیشن ۳", ipv4: "172.16.0.0/30", ipv6: "2001:db8:2::/126" },
+      "loc4": { name: "لوکیشن ۴", ipv4: "192.168.2.0/29", ipv6: "2001:db8:3::/125" },
+      "loc5": { name: "لوکیشن ۵", ipv4: "10.0.1.0/30", ipv6: "2001:db8:4::/126" }
+    };
+
+    const locationSelect = document.getElementById('location-select');
+    const sortedLocations = Object.keys(locationRanges).sort((a, b) => {
+      const nameA = locationRanges[a].name.toUpperCase();
+      const nameB = locationRanges[b].name.toUpperCase();
+      return nameA.localeCompare(nameB);
+    });
+    sortedLocations.forEach(key => {
+      const option = document.createElement('option');
+      option.value = key;
+      option.textContent = locationRanges[key].name;
+      locationSelect.appendChild(option);
+    });
+
+    document.getElementById('generate-ips').addEventListener('click', () => {
+      const selectedLocation = document.getElementById('location-select').value;
+      const ranges = locationRanges[selectedLocation];
+      if (!ranges) {
+        alert('لوکیشن انتخاب شده نامعتبر است.');
+        return;
+      }
+      const ipv4Addresses = generateIPv4Addresses(ranges.ipv4);
+      const ipv6Addresses = generateIPv6Addresses(ranges.ipv6);
+      displayAddresses(ipv4Addresses, 'ipv4-result');
+      displayAddresses(ipv6Addresses, 'ipv6-result');
+    });
+
+    /* --------------------------
+       توابع اختصاصی برای کارت England Gaming
+    -------------------------- */
+    function generateEnglandGamingIPv4() {
+      const a = 94;
+      const bOptions = [236, 237, 238];
+      const b = bOptions[Math.floor(Math.random() * bOptions.length)];
+      const c = Math.floor(Math.random() * 255) + 1;
+      const d = Math.floor(Math.random() * 255) + 1;
+      return `${a}.${b}.${c}.${d}`;
+    }
+    function generateEnglandGamingIPv6() {
+      const prefix = "2607:fb10:7038::";
+      const prefixLength = 48;
+      const fixedParts = prefix.split(':').filter(part => part !== "");
+      const fixedCount = Math.floor(prefixLength / 16);
+      const randomPartsCount = 8 - fixedCount;
+      let randomParts = [];
+      for (let i = 0; i < randomPartsCount; i++) {
+        let part = Math.floor(Math.random() * 0x10000).toString(16);
+        randomParts.push(part.padStart(4, '0'));
+      }
+      const fullParts = fixedParts.slice(0, fixedCount).concat(randomParts);
+      return fullParts.join(':');
+    }
+    document.getElementById('generate-england-ipv4').addEventListener('click', () => {
+      const address = generateEnglandGamingIPv4();
+      document.getElementById('england-ipv4-result').textContent = address;
+    });
+    document.getElementById('generate-england-ipv6').addEventListener('click', () => {
+      const address = generateEnglandGamingIPv6();
+      document.getElementById('england-ipv6-result').textContent = address;
+    });
+
+    /* --------------------------
+       توابع اختصاصی برای کارت امارات (IPv4)
+    -------------------------- */
+    function generateEmiratesIPv4() {
+      const rand3 = Math.floor(Math.random() * 300) + 1; // 1 تا 300
+      const rand4 = Math.floor(Math.random() * 254) + 1; // 1 تا 254
+      return `192.250.${rand3}.${rand4}`;
+    }
+    document.getElementById('generate-emirates-ipv4').addEventListener('click', () => {
+      const address = generateEmiratesIPv4();
+      document.getElementById('emirates-ipv4-result').textContent = address;
+    });
+
+    /* --------------------------
+       توابع اختصاصی برای کارت ایتالیا (IPv4)
+    -------------------------- */
+    function generateItalyGamingIPv4() {
+      const a = 88;
+      const bOptions = [81, 160];
+      const b = bOptions[Math.floor(Math.random() * bOptions.length)];
+      const c = Math.floor(Math.random() * 255) + 1;
+      const d = Math.floor(Math.random() * 255) + 1;
+      return `${a}.${b}.${c}.${d}`;
+    }
+    document.getElementById('generate-italy-ipv4').addEventListener('click', () => {
+      const address = generateItalyGamingIPv4();
+      document.getElementById('italy-ipv4-result').textContent = address;
+    });
+
+    /* --------------------------
+       توابع اختصاصی برای کارت عراق (IPv6)
+    -------------------------- */
+    function generateIraqIPv6() {
+      const iraqPrefix = "2001:db8:1234::";
+      const group1 = Math.floor(Math.random() * 0x10000).toString(16).padStart(4, '0');
+      const group2 = Math.floor(Math.random() * 0x10000).toString(16).padStart(4, '0');
+      return `${iraqPrefix}${group1}:${group2}`;
+    }
+    document.getElementById('generate-iraq-ipv6').addEventListener('click', () => {
+      const address = generateIraqIPv6();
+      document.getElementById('iraq-ipv6-result').textContent = address;
+    });
+
+    /* --------------------------
+       توابع اختصاصی برای کارت آمریکا (نسل 4 IPv4 - Reverse DNS)
+       مشابه الگوریتم پایتون ارائه شده
+    -------------------------- */
+    function generateAmericaIPv4DNS() {
+      const second_octet = Math.floor(Math.random() * 256);
+      const third_octet = Math.floor(Math.random() * 256);
+      const fourth_octet = Math.floor(Math.random() * 256);
+      const ip_address = `17.${second_octet}.${third_octet}.${fourth_octet}`;
+      const dns_address = `${ip_address}`;
+      return dns_address;
+    }
+    document.getElementById('generate-america-ipv4').addEventListener('click', () => {
+      const address = generateAmericaIPv4DNS();
+      document.getElementById('america-ipv4-result').textContent = address;
+    });
+
+    /* --------------------------
+       توابع اختصاصی برای کارت نسل 6 سفارشی
+       (تولید آدرس به فرم "2a00:1b28:{segment3}:{segment4}::{segment6}:{segment7}:{segment8}")
+    -------------------------- */
+    function generateCustomIPv6() {
+      function randomChars(length, charset) {
+        let result = '';
+        for (let i = 0; i < length; i++) {
+          result += charset.charAt(Math.floor(Math.random() * charset.length));
+        }
+        return result;
+      }
+      const digitsNoZero = '123456789';
+      const hexChars = '123456789abcdef';
+      const segment3 = randomChars(4, digitsNoZero);
+      const segment4 = randomChars(4, hexChars);
+      const segment6 = randomChars(3, hexChars);
+      const segment7 = randomChars(4, hexChars);
+      const segment8 = randomChars(4, digitsNoZero);
+      return `2a00:1b28:${segment3}:${segment4}::${segment6}:${segment7}:${segment8}`;
+    }
+    document.getElementById('generate-custom-ipv6').addEventListener('click', () => {
+      const address = generateCustomIPv6();
+      document.getElementById('custom-ipv6-result').textContent = address;
+    });
+  </script>
+</body>
+
+</html>
